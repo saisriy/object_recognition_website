@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Object Recognition with CIFAR-10</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f4f9;
+      color: #222;
+      line-height: 1.6;
+    }
+    header {
+      background-color: #1c1c1c;
+      color: white;
+      padding: 30px 0;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    section {
+      max-width: 1100px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      border-bottom: 3px solid #ddd;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    img.graph {
+      width: 100%;
+      max-width: 600px;
+      display: block;
+      margin: 20px auto;
+    }
+    .metric {
+      background: #e3f2fd;
+      padding: 10px;
+      border-left: 5px solid #1565c0;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    hr {
+      margin: 40px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Object Recognition on CIFAR-10</h1>
+  <p>Comparison of ML Techniques for Object recognition</p>
+</header>
+
+<!-- ABSTRACT -->
+<section id="abstract">
+  <h2>Abstract</h2>
+  <p>
+    Object recognition is a critical task in computer vision with applications ranging from autonomous vehicles to image-based search engines.
+    In this project, we focus on comparing traditional machine learning techniques—Support Vector Machine (SVM), k-Nearest Neighbors (KNN), and Random Forest—
+    for the task of object classification using the CIFAR-10 dataset.
+  </p>
+  <p>
+    We explore different feature extraction methods, including raw pixel intensity values, Histogram of Oriented Gradients (HOG), and Principal Component Analysis (PCA),
+    to understand how input representation impacts classification performance. Each model is evaluated using standard metrics such as accuracy and confusion matrix.
+    This study provides insight into which feature-model combination offers the best trade-off between performance and computational cost.
+  </p>
+</section>
+
+<!-- DATASET -->
+<section id="dataset">
+  <h2>Dataset</h2>
+  <p>
+    The CIFAR-10 dataset, curated by Alex Krizhevsky, consists of 60,000 32x32 color images in 10 different categories such as airplane, automobile, bird, cat, deer, dog, frog, horse, ship, and truck.
+    The dataset is split into 50,000 training images and 10,000 test images.
+  </p>
+  <p>
+    Each image is represented as a 32x32x3 RGB matrix. For preprocessing, images were either flattened (for raw pixel input), converted to grayscale and transformed using HOG,
+    or reduced in dimensionality using PCA.
+  </p>
+  <p>
+    More on CIFAR-10: <a href="https://www.cs.toronto.edu/~kriz/cifar.html" target="_blank">https://www.cs.toronto.edu/~kriz/cifar.html</a>
+  </p>
+</section>
+
+<!-- METHODS OVERVIEW -->
+<section id="methods">
+  <h2>Methods Tried</h2>
+  <p>
+    We used three core machine learning techniques to classify images in the CIFAR-10 dataset:
+  </p>
+  <ul>
+    <li><strong>Random Forest:</strong> An ensemble of decision trees with feature bagging.</li>
+    <li><strong>Support Vector Machine (SVM):</strong> A powerful classifier that finds the optimal hyperplane in high-dimensional space.</li>
+    <li><strong>k-Nearest Neighbors (KNN):</strong> A non-parametric method that classifies based on majority voting of nearest neighbors.</li>
+  </ul>
+  <p>
+    For feature extraction, we used:
+  </p>
+  <ul>
+    <li><strong>Raw Pixels:</strong> Directly flattened RGB values.</li>
+    <li><strong>HOG:</strong> Captures local gradient orientation and structure.</li>
+    <li><strong>PCA:</strong> Reduces dimensionality by keeping components with maximum variance.</li>
+  </ul>
+</section>
+
+<!-- RANDOM FOREST SECTION -->
+<section id="randomforest">
+  <h2>Random Forest - Detailed Analysis</h2>
+
+  <h3>1. Using Raw Pixel Features</h3>
+  <p>
+    Raw pixel features represent each image as a flat vector of 3072 values (32x32x3).
+    This method retains all color information but fails to capture spatial relationships between pixels.
+  </p>
+  <p>
+    Random Forests, due to their robustness, performed decently even with high-dimensional noisy data. However, the model lacks any spatial awareness,
+    so performance is bounded by the inability to detect meaningful patterns like edges or shapes.
+  </p>
+  <img src="graph2.jpg" alt="Accuracy vs Estimators" class="graph" />
+
+  <div class="metric">Accuracy: ~48%</div>
+  <p>
+     In the case of raw pixels, misclassifications are more common between classes with similar color profiles (e.g., "deer" vs "horse").
+  </p>
+  <img src="confusion_rf_normal.png" alt="Confusion Matrix - Raw Pixels" class="graph" />
+  
+
+  <hr/>
+
+  <h3>2. Using HOG (Histogram of Oriented Gradients)</h3>
+  <p>
+    HOG features capture edge direction and intensity changes, which are crucial for identifying object outlines.
+    We first converted the RGB images to grayscale before applying HOG. While spatial information improved, the lack of color sometimes led to confusion between similarly shaped objects.
+  </p>
+  <div class="metric">Accuracy: ~50-52%</div>
+  <p>
+    With HOG features, the confusion matrix shows improved recognition of classes with distinct shapes (like "airplane" and "ship"), but confusion still arises in visually similar shapes (e.g., "cat" vs "dog").
+  </p>
+  <img src="confusion_rf_hog.png" alt="Confusion Matrix - HOG" class="graph" />
+
+  <hr/>
+
+  <h3>3. Using PCA (Principal Component Analysis)</h3>
+  <p>
+    PCA transforms the original data to a smaller set of principal components while retaining most of the data’s variance.
+    This not only reduces the feature space and noise but also accelerates model training. It retains just enough structure to allow good classification.
+  </p>
+  <div class="metric">Accuracy: ~51–53%</div>
+  <p>
+    Using PCA, the confusion matrix tends to be more balanced, as noise is reduced and only the most relevant information is retained. However, extreme dimensionality reduction might also discard subtle class-specific features, leading to misclassifications in nuanced categories.
+  </p>
+  <img src="confusion_rf_pca.png" alt="Confusion Matrix - PCA" class="graph" />
+</section>
+
+<!-- SVM SECTION -->
+<section id="svm">
+    <h2>Support Vector Machine (SVM) - Detailed Analysis</h2>
+  
+    <h3>1. Using PCA-Reduced Raw Pixel Features</h3>
+    <p>
+      Support Vector Machines were trained using PCA-reduced raw pixel features. PCA helped reduce dimensionality from 3072 to 100 components,
+      retaining maximum variance while making the training process faster and more efficient.
+    </p>
+    <p>
+      We used the RBF (Radial Basis Function) kernel for non-linear classification, and tested with different values of the regularization parameter <code>C</code>.
+    </p>
+  
+    <img src="graph1.jpg" alt="Accuracy vs C value for SVM" class="graph" />
+  
+    <div class="metric">Best Accuracy Achieved: ~<strong>53%</strong> (at C = 1)</div>
+  
+    <p>
+      The plot above shows the variation in accuracy with different values of <code>C</code>. It reveals that very low regularization (C=0.001) underfits the model,
+      while an optimal value around C=1.0 yields the best generalization on test data.
+    </p>
+  
+    <p>
+      Despite dimensionality reduction, the model still struggles with fine-grained class differences due to limited feature expressiveness of raw pixel values.
+      However, the PCA preprocessing step significantly improves both training time and generalization compared to unprocessed pixel vectors.
+    </p>
+  
+    <hr/>
+  
+    <h3>2. Confusion Matrix for SVM</h3>
+    <p>
+      Below is the confusion matrix illustrating how well the SVM performed on each class of CIFAR-10 test data.
+      Diagonal elements represent correct classifications, while off-diagonal values indicate misclassifications.
+    </p>
+    <img src="confusion_svm.png" alt="Confusion Matrix for SVM" class="graph" />
+  
+    <p>
+      The model shows stronger performance on visually distinct classes like <strong>"Airplane"</strong> and <strong>"Ship"</strong>,
+      while it struggles to distinguish similar-looking categories such as <strong>"Cat"</strong> and <strong>"Dog"</strong>,
+      especially after grayscale and dimensionality reduction.
+    </p>
+  
+    <hr/>
+  
+    <h3>3. Sample Predictions</h3>
+    <p>
+      A visual check of randomly selected predictions helps assess real-world behavior of the model.
+      Correct predictions are labeled in <span style="color: green;">green</span>, and incorrect ones in <span style="color: red;">red</span>.
+    </p>
+    <img src="sample_predictions_svm.png" alt="SVM Sample Predictions" class="graph" />
+  
+    <p>
+      As shown, the model often performs well on simpler, high-contrast classes, but still struggles with noisy or ambiguous examples where class boundaries are not well-defined.
+      This reaffirms that while SVMs with PCA provide a good baseline, more complex models like CNNs are better suited for deep image understanding tasks.
+    </p>
+  
+    <div class="metric">Key Takeaway: SVM with PCA achieves moderate performance (~53%), but has limitations with complex visual data.</div>
+  </section>
+
+  <!-- KNN SECTION -->
+<section id="knn">
+    <h2>K-Nearest Neighbors (KNN) - Detailed Analysis</h2>
+  
+    <h3>1. Using Raw Pixel Features (Flattened RGB)</h3>
+    <p>
+      K-Nearest Neighbors is a lazy, non-parametric learning algorithm that classifies test samples based on the most common label among its <code>k</code> nearest neighbors in the feature space.
+      For this experiment, each CIFAR-10 image was flattened into a 3072-dimensional vector representing RGB pixel values.
+    </p>
+    <p>
+      We used the following configuration:
+      <ul>
+        <li><strong>k = 7</strong> (a moderate neighborhood size to avoid overfitting)</li>
+        <li><strong>Distance metric: Manhattan</strong> (L1 norm instead of the default Euclidean)</li>
+      </ul>
+    </p>
+    <div class="metric">KNN Accuracy: ~<strong>37.64%</strong></div>
+  
+    <p>
+      The relatively low accuracy reflects the challenges KNN faces with high-dimensional image data. Since it relies purely on distance calculations in pixel space,
+      it suffers from the "curse of dimensionality" and lacks any abstraction of shapes, edges, or context.
+    </p>
+    <p>
+      That said, KNN still demonstrates its strength in recognizing visually distinct categories like "ship" or "airplane" when background clutter is minimal.
+    </p>
+  
+    <img src="confusion_knn.png" alt="KNN Confusion Matrix" class="graph" />
+  
+    <p>
+      The confusion matrix indicates that the classifier frequently mislabels visually similar classes — particularly "cat", "dog", "deer", and "horse".
+      These classes share similar textures and color distributions, which creates significant overlap in the raw pixel space.
+    </p>
+  
+    <hr/>
+  
+    <h3>2. Sample Predictions</h3>
+    <p>
+      Below is a visualization of KNN predictions for randomly selected test images.
+      Green-labeled predictions indicate correct classifications, while red-labeled ones indicate errors.
+    </p>
+    <img src="predictions_knn.png" alt="KNN Sample Predictions" class="graph" />
+  
+    <p>
+      These examples reveal that KNN performs reasonably well when the test image has a close match in the training data,
+      but fails when the image is ambiguous, noisy, or from a class with high intra-class variation.
+    </p>
+  
+    <div class="metric">
+      Key Takeaway: While KNN is simple and intuitive, it is not well-suited for high-dimensional image data like CIFAR-10 without feature extraction.
+    </div>
+  
+    <hr/>
+  
+    <h3>3. Discussion & Limitations</h3>
+    <p>
+      KNN is a powerful algorithm for low-dimensional or well-clustered datasets. However, CIFAR-10 presents a challenge due to:
+      <ul>
+        <li><strong>High dimensionality</strong>: Flattened images lead to sparse and noisy comparisons.</li>
+        <li><strong>Lack of spatial understanding</strong>: It cannot leverage relationships between nearby pixels.</li>
+        <li><strong>Computational inefficiency</strong>: Predicting on each test sample requires distance computation with all training points.</li>
+      </ul>
+    </p>
+    <p>
+      Although using a different distance metric (like Manhattan) helped reduce some of the variance compared to Euclidean,
+      the overall architecture of KNN remains inherently limited for this kind of image recognition task.
+    </p>
+  
+    <div class="metric">
+      Final Verdict: KNN with raw pixel features achieves <strong>~37.64%</strong> accuracy, limited by scalability and spatial naivety.
+    </div>
+  </section>
+  
+  <!-- CNN SECTION -->
+<section id="cnn">
+    <h2>Convolutional Neural Network (CNN) - Deep Learning Approach</h2>
+  
+    <h3>1. Architecture Overview</h3>
+    <p>
+      To push beyond the limits of traditional machine learning techniques, we implemented a Convolutional Neural Network (CNN)
+      — a deep learning architecture designed to learn spatial hierarchies of patterns directly from image data.
+    </p>
+  
+    <p>
+      Our CNN architecture consists of two main convolutional blocks followed by a fully connected classifier:
+      <ul>
+        <li><strong>2 Conv2D layers</strong> with 32 filters each + ReLU activation + max pooling + dropout (25%)</li>
+        <li><strong>2 Conv2D layers</strong> with 64 filters each + ReLU activation + max pooling + dropout (25%)</li>
+        <li><strong>Dense layer</strong> with 512 units + dropout (50%)</li>
+        <li><strong>Output layer</strong> with softmax activation for 10-class classification</li>
+      </ul>
+    </p>
+  
+    <div class="metric">
+      Final Test Accuracy: <strong>~72–75%</strong> 
+    </div>
+  
+    <p>
+      The model was trained for <strong>20 epochs</strong> using the <code>Adam</code> optimizer and <code>categorical crossentropy</code> loss function, with a batch size of 64
+      and 20% of the training data used for validation.
+    </p>
+  
+    <img src="accuracy_cnn.png" alt="CNN Training & Validation Accuracy" class="graph" />
+  
+    <p>
+      The plot above shows a clear upward trend in both training and validation accuracy, with signs of convergence and generalization.
+      Unlike classical models, CNNs are able to capture complex spatial patterns in images, leading to much higher performance.
+    </p>
+  
+    <hr/>
+  
+    <h3>2. Why CNN Performs Better</h3>
+    <p>
+      CNNs use convolutional layers to detect edges, textures, shapes, and eventually abstract concepts like objects. Key advantages over traditional models include:
+      <ul>
+        <li><strong>Spatial Awareness:</strong> Filters scan over regions, preserving local structure.</li>
+        <li><strong>Parameter Sharing:</strong> Fewer weights than fully connected layers → less overfitting.</li>
+        <li><strong>Hierarchical Learning:</strong> Earlier layers detect edges, deeper layers detect object parts.</li>
+        <li><strong>Dropout Regularization:</strong> Helps reduce overfitting and improves generalization.</li>
+      </ul>
+    </p>
+  
+    <p>
+      The CNN significantly outperforms SVM, Random Forest, and KNN, making it the most effective approach for CIFAR-10 in this study.
+      However, it comes at the cost of longer training times and the need for GPU acceleration.
+ 
+      Hence, the CNN is able to correctly classify a wide variety of CIFAR-10 images, including those with complex textures or multiple colors.
+      Misclassifications still exist — often between semantically similar classes (e.g., "cat" vs "dog") — but overall accuracy is much higher.
+    </p>
+  
+    <div class="metric">
+      Key Takeaway: CNNs achieve <strong>~75%</strong> accuracy on CIFAR-10 — the best among all models tested. 
+    </div>
+  </section>
+  
+  
+
+
+
+</body>
+</html>
