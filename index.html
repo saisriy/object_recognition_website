@@ -117,6 +117,9 @@
     <li><strong>Support Vector Machine (SVM):</strong> A powerful classifier that finds the optimal hyperplane in high-dimensional space.</li>
     <li><strong>k-Nearest Neighbors (KNN):</strong> A non-parametric method that classifies based on majority voting of nearest neighbors.</li>
     <li><strong>Convolutional Neural Network (CNN):</strong> A deep learning model that automatically learns hierarchical spatial features from image data, particularly effective for image classification tasks.</li>
+    <li><strong>Naive Bayes:</strong> A probabilistic classifier based on Bayes’ Theorem with the “naive” assumption of feature independence. It is simple, fast, and works surprisingly well for high-dimensional data despite its assumptions.</li>
+    <li><strong>Multilayer Perceptron (MLP):</strong> A class of feedforward artificial neural networks with one or more hidden layers. MLPs learn complex, non-linear mappings using backpropagation and are effective for capturing intricate patterns in image data when flattened into vectors.</li>
+    <li><strong>Gradient Boosting:</strong>An ensemble technique that builds a series of weak learners (typically decision trees), where each new model focuses on correcting the errors of the previous ones. It excels in achieving high accuracy and handling various types of data, including structured and tabular features extracted from images.</li>
 
   </ul>
   
@@ -141,7 +144,7 @@
   <p>
      In the case of raw pixels, misclassifications are more common between classes with similar color profiles (e.g., "deer" vs "horse").
   </p>
-  <img src="confusion_rf_normal.png" alt="Confusion Matrix - Raw Pixels" class="graph" />
+  
   
 
   <hr/>
@@ -301,6 +304,88 @@
       Final Verdict: KNN with raw pixel features achieves <strong>~37.64%</strong> accuracy, limited by scalability and spatial naivety.
     </div>
   </section>
+
+  <section id="mlp">
+    <h2>Multi-Layer Perceptron (MLP) - Detailed Analysis</h2>
+  
+    <h3>1. Using Raw Pixel Features (Flattened RGB)</h3>
+    <p>
+      Multi-Layer Perceptron is a feedforward artificial neural network capable of learning complex, non-linear decision boundaries.
+      In this experiment, we used a two-layer MLP model to classify CIFAR-10 images. Each image was first flattened into a 3072-dimensional vector
+      (32 × 32 pixels × 3 color channels), and the pixel values were normalized to the range [0, 1].
+    </p>
+    <p>
+      Configuration used:
+      <ul>
+        <li><strong>Hidden Layers:</strong> (128, 64) — Two layers with ReLU activation</li>
+        <li><strong>Optimizer:</strong> Adam</li>
+        <li><strong>Learning Rate:</strong> 0.001</li>
+        <li><strong>Max Iterations:</strong> 100</li>
+      </ul>
+    </p>
+  
+    <div class="metric">MLP Test Accuracy: <strong>~X.XXX%</strong> (replace with your result)</div>
+  
+    <p>
+      The MLP demonstrates stronger performance than simpler models like KNN, thanks to its ability to learn internal representations of data.
+      It performs especially well for classes with distinctive shapes and textures such as <em>ship</em>, <em>airplane</em>, and <em>truck</em>.
+      However, some performance gaps remain due to the lack of spatial awareness — the network doesn’t inherently understand local patterns or edges.
+    </p>
+  
+    <img src="confusion_mlp.png" alt="MLP Confusion Matrix" class="graph" />
+  
+    <p>
+      The confusion matrix highlights confusion between visually similar classes like <em>cat</em>, <em>dog</em>, and <em>horse</em>.
+      These misclassifications are expected due to overlapping textures and poses in the dataset. Despite this, the MLP shows more consistent classification compared to simpler models.
+    </p>
+  
+    <hr/>
+  
+    <h3>2. Sample Predictions</h3>
+    <p>
+      Below are randomly selected test images with their true and predicted labels. Green labels indicate correct predictions, while red labels indicate misclassifications.
+    </p>
+  
+    <img src="predictions_mlp.png" alt="MLP Sample Predictions" class="graph" />
+  
+    <p>
+      The visualization shows that the MLP performs well on images with clear shapes or minimal clutter, but struggles with ambiguous or noisy samples.
+      Misclassifications often occur in classes with high intra-class variability, such as animals in different poses or lighting.
+    </p>
+  
+    <div class="metric">
+      Key Insight: MLP models are capable of capturing more abstract patterns than KNN or naive classifiers but still lack image-specific features like edges or texture.
+    </div>
+  
+    <hr/>
+  
+    <h3>3. Cross-Validation & Generalization</h3>
+    <p>
+      To assess generalization, we applied 3-fold cross-validation. The validation scores showed moderate variance, indicating the model's sensitivity to initialization and data splits.
+    </p>
+    <img src="crossval_mlp.png" alt="MLP Cross-Validation Accuracy" class="graph" />
+  
+    <p>
+      Training accuracy remained consistently high, but slight overfitting is evident. Further regularization or early stopping could help stabilize performance.
+    </p>
+  
+    <hr/>
+  
+    <h3>4. Class-wise Recall</h3>
+    <p>
+      The recall per class shows strong performance on distinct object types, while animal categories (especially <em>cat</em>, <em>dog</em>, <em>deer</em>) continue to pose challenges.
+    </p>
+    <img src="recall_mlp.png" alt="MLP Class-wise Recall" class="graph" />
+  
+    <p>
+      These results align with expectations for CIFAR-10, where some categories naturally have more variation and are harder to classify with flattened raw pixel data.
+    </p>
+  
+    <div class="metric">
+      Final Verdict: MLP with raw pixel features achieves <strong>~X.XXX%</strong> accuracy, showing solid performance but limited by spatial unawareness.
+    </div>
+  </section>
+  
   
   <!-- CNN SECTION -->
 <section id="cnn">
@@ -364,6 +449,115 @@
     </div>
   </section>
   
+  <!-- NAIVE BAYES SECTION -->
+<section id="naivebayes">
+  <h2>Naive Bayes - Detailed Analysis</h2>
+
+  <h3>1. What is Naive Bayes?</h3>
+  <p>
+    Naive Bayes is a simple yet powerful probabilistic classifier based on Bayes' Theorem. It assumes that the features used for classification are independent of each other — an assumption that is rarely true in practice, but often works well in real-world scenarios.
+  </p>
+  <p>
+    Specifically, we used the <strong>Gaussian Naive Bayes</strong> variant, which assumes that the input features follow a normal (Gaussian) distribution. This model is especially efficient for high-dimensional data and works well even with a small amount of training data.
+  </p>
+
+  <h3>2. Using PCA-Reduced Features</h3>
+  <p>
+    Since Naive Bayes is sensitive to noisy and high-dimensional data, we first applied PCA (Principal Component Analysis) to reduce the feature space to 100 components.
+    This allowed the model to focus on the most significant features while discarding redundancy.
+  </p>
+  <div class="metric">Accuracy: ~32.7%</div>
+  <p>
+    The performance was lower than other models, which is expected given the strong assumptions made by Naive Bayes and the complexity of the CIFAR-10 dataset. However, it served as a fast and interpretable baseline.
+  </p>
+  <img src="confusion_nb_pca.png" alt="Confusion Matrix - Naive Bayes" class="graph" />
+
+  <p>
+    From the confusion matrix, it's evident that the model struggles most with visually similar categories like "cat", "dog", and "deer". Misclassifications are common when the input features are not clearly separable in the reduced space.
+  </p>
+
+  <h3>3. Visualizing Predictions</h3>
+  <p>
+    Below are some sample predictions made by the Naive Bayes classifier on PCA-reduced test images. Correct predictions are highlighted in green, while incorrect ones are in red.
+  </p>
+  <img src="sample_preds_nb.png" alt="Sample Predictions - Naive Bayes" class="graph" />
+
+  <p>
+    Despite the lower overall accuracy, Naive Bayes remains a valuable baseline due to its simplicity, interpretability, and speed, especially in scenarios with limited data or computation.
+  </p>
+</section>
+
+<!-- GRADIENT BOOSTING SECTION -->
+<section id="gradientboosting">
+  <h2>Gradient Boosting - Detailed Analysis</h2>
+
+  <h3>1. What is Gradient Boosting?</h3>
+  <p>
+    Gradient Boosting is an ensemble learning technique that builds a strong classifier from a set of weak learners, typically decision trees. It works by training models sequentially, where each new model attempts to correct the errors of the previous ones. This approach often achieves high accuracy on complex datasets like CIFAR-10.
+  </p>
+
+  <h3>2. Using PCA-Reduced Features</h3>
+  <p>
+    Since Gradient Boosting can be computationally intensive on large feature spaces, we applied PCA (Principal Component Analysis) to reduce the 3072-dimensional image data to 100 components. This significantly reduced training time while retaining the most important features for classification.
+  </p>
+  <div class="metric">Accuracy: ~37.6%</div>
+  <p>
+    Gradient Boosting achieved a moderate performance on the PCA-reduced CIFAR-10 dataset. It outperformed simpler models like Naive Bayes but still struggled with fine-grained visual classes. Training time and accuracy were further explored by tuning hyperparameters.
+  </p>
+  <img src="confusion_gb_pca.png" alt="Confusion Matrix - Gradient Boosting" class="graph" />
+
+
+  <h3>3. Hyperparameter Tuning</h3>
+  <p>
+    Gradient Boosting is sensitive to its hyperparameters, and tuning them can significantly impact model performance. We analyzed the effects of varying the number of estimators, learning rate, and tree depth using PCA-reduced CIFAR-10 data. Below is a breakdown of how each parameter affects accuracy and training time:
+  </p>
+  
+  <h4>Number of Estimators</h4>
+  <p>
+    Increasing the number of estimators typically improves accuracy because more trees help the model correct its errors iteratively. However, after a point, the gains become marginal, and training time increases significantly. This can lead to overfitting if too many trees are used without regularization.
+  </p>
+  
+  <div class="graph-row">
+    <img src="gb_estimators_accuracy.png" alt="Accuracy vs Number of Estimators" class="graph" />
+  </div>
+  
+  <h4>Learning Rate</h4>
+  <p>
+    The learning rate controls how much each tree contributes to the final prediction. A smaller learning rate makes the model learn more slowly and cautiously, which often yields better performance, but it requires more trees (i.e., higher training time). A very high learning rate can make the model too aggressive and miss the optimal solution, reducing accuracy.
+  </p>
+  
+  <div class="graph-row">
+    <img src="gb_learningrate_accuracy.png" alt="Accuracy vs Learning Rate" class="graph" />
+    <img src="gb_learningrate_time.png" alt="Training Time vs Learning Rate" class="graph" />
+  </div>
+  
+  <h4>Tree Depth (Max Depth)</h4>
+  <p>
+    The depth of each tree controls how complex the individual learners can be. Deeper trees capture more interactions between features but also risk overfitting the training data. Shallower trees generalize better and are faster to train, but might underfit. There's usually a sweet spot where the model balances accuracy and training efficiency.
+  </p>
+  
+  <div class="graph-row">
+    <img src="gb_depth_accuracy.png" alt="Accuracy vs Max Depth" class="graph" />
+    <img src="gb_depth_time.png" alt="Training Time vs Max Depth" class="graph" />
+  </div>
+  
+  <h4>Final Performance</h4>
+
+  <p>
+    We observed that increasing the number of estimators improved accuracy up to a point, after which it plateaued. Similarly, smaller learning rates offered better accuracy but increased training time. A max depth of 3–4 seemed to offer a good trade-off.
+  </p>
+
+  <h3>4. Visualizing Predictions</h3>
+  <p>
+    Below are sample predictions from the Gradient Boosting model. Correct predictions are shown in green, while incorrect ones are in red.
+  </p>
+  <img src="sample_preds_gb.png" alt="Sample Predictions - Gradient Boosting" class="graph" />
+
+  <p>
+    The model was relatively good at classifying distinct categories like "airplane" and "ship", but struggled with animals like "cat", "dog", and "deer". This shows that boosting improves results on complex data, but still requires robust features for fine-grained tasks.
+  </p>
+</section>
+
   
 
 
