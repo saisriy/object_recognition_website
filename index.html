@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Object Recognition with CIFAR-10</title>
+  
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -60,6 +61,7 @@
 <body>
 
 <header>
+ 
   <h1>Object Recognition on CIFAR-10</h1>
   <p>Comparison of ML Techniques for Object recognition</p>
   <div style="margin-top: 20px;">
@@ -72,7 +74,14 @@
       <li>Akanksha Singh (B23CM1005)</li>
       <li>Raghav Mittal (B23CM1032)</li>
     </ul>
-  </div>
+  
+  <a href="https://tryautoml-pza5x6crthximgft5bcuyx.streamlit.app/" target="_blank"
+     style="position: absolute; top: 320px; right: 50px; text-decoration: none;">
+    <button style="padding: 10px 16px; background-color: #3e4347; color: white; border: none; border-radius: 6px; cursor: pointer;">
+      CNN Demo
+    </button>
+  </a>
+</div>
 </header>
 
 <!-- ABSTRACT -->
@@ -558,7 +567,11 @@
   </p>
 </section>
 
-  
+<script>
+  document.getElementById('demo-btn').addEventListener('click', function() {
+      window.open('cnn_demo.html', 'CNN Demo', 'width=900,height=700');
+  });
+</script>
 
 
 
